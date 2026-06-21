@@ -5,11 +5,12 @@ SWITCH_IP = '127.0.0.1'
 COMMUNITY = 'switch'
 PORTA_SNMP = 1161
 
-
+#função feita para django (ver se funciona no fastApi)
 def get_client_ip(request): 
     return request.META.get("REMOTE_ADDR")
 
 
+#passa o ip e retorna o MAC
 async def getSnmpMac(ip_procurado):
     """
     Varre a tabela ARP do switch e retorna o MAC correspondente ao IP solicitado,
@@ -65,7 +66,7 @@ async def getSnmpMac(ip_procurado):
     print(f"[Aviso] O IP {ip_procurado} não foi encontrado na tabela ARP do switch.")
     return None
 
-
+#Pega o status de todas as interfaces do switch (Up ou Down)
 async def getSnmpPort():
     oid_base = "1.3.6.1.2.1.2.2.1.8"
     
@@ -108,6 +109,7 @@ async def getSnmpPort():
     return resultados
 
 
+#Função para fazer o set nas portas (passar a porta e o status desejado[1- para Up, 2 - para Down])
 async def setSnmp(porta_id, novo_status):
 
     oid_base = "1.3.6.1.2.1.2.2.1.7"
