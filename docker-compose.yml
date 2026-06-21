@@ -1,0 +1,26 @@
+services:
+  # Simulador do switch (responde SNMP a partir de data/switch.snmprec)
+  # Imagem isolada para não conflitar com o pysnmp do app.
+  snmpsim:
+    build:
+      context: .
+      dockerfile: Dockerfile.snmpsim
+    volumes:
+      - ./data:/app/data:ro
+    expose:
+      - "1161/udp"
+
+  # Aplicação web FastAPI
+  web:
+    build: .
+    environment:
+      - TZ=America/Sao_Paulo
+      - SWITCH_IP=snmpsim
+      - SWITCH_PORT=1161
+      - SWITCH_COMMUNITY=switch
+      - SECRET_KEY=troque-esta-chave-em-producao
+      - REQUIRE_MAC=1
+    ports:
+      - "8000:8000"
+    depends_on:
+      - snmpsim

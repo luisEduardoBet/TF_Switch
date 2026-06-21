@@ -1,0 +1,15 @@
+# Imagem isolada só para o simulador SNMP (deps independentes do app).
+FROM python:3.12-slim
+
+RUN groupadd -r app && useradd -r -g app app
+
+RUN pip install --no-cache-dir snmpsim-lextudio
+
+WORKDIR /app
+COPY data/ /app/data/
+
+USER app
+
+CMD ["snmpsim-command-responder", \
+     "--data-dir=/app/data", \
+     "--agent-udpv4-endpoint=0.0.0.0:1161"]

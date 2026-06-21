@@ -1,137 +1,134 @@
-from pysnmp.hlapi.asyncio import *
-import asyncio
+try:
+    # pysnmp 7.x
+    from pysnmp.hlapi.v3arch.asyncio import *
+except ImportError:
+    # fallback para versões antigas (6.x)
+    from pysnmp.hlapi.asyncio import *
+import os
 
-SWITCH_IP = '127.0.0.1'
-COMMUNITY = 'switch'
-PORTA_SNMP = 1161
-
-#função feita para django (ver se funciona no fastApi)
-def get_client_ip(request): 
-    return request.META.get("REMOTE_ADDR")
+# IP/porta/community padrão do switch (usados quando nenhum IP é passado).
+SWITCH_IP = os.getenv('SWITCH_IP', '127.0.0.1')
+COMMUNITY = os.getenv('SWITCH_COMMUNITY', 'switch')
+PORTA_SNMP = int(os.getenv('SWITCH_PORT', '1161'))
 
 
-#passa o ip e retorna o MAC e porta do IP solicitante.
-async def getSnmpMac(ip_procurado):
-    """
-    Varre a tabela ARP do switch e retorna o MAC correspondente ao IP solicitado,
-    corrigido para a nova API de geradores do pySNMP.
-    """
+def get_client_ip(request):
+    """Retorna o IP do cliente. Respeita X-Forwarded-For (útil atrás de
+    proxy e em testes); senão usa o IP do socket."""
+    xff = request.headers.get("x-forwarded-for")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.client.host if request.client else None
+
+
+async def _make_target(ip):
+    """Cria o alvo de transporte UDP de forma compatível com pysnmp 6.x e 7.x.
+    Na 7.x a resolução de DNS é assíncrona via UdpTransportTarget.create();
+    na 6.x usa-se o construtor direto."""
+    endpoint = (ip, PORTA_SNMP)
+    if hasattr(UdpTransportTarget, "create"):
+        return await UdpTransportTarget.create(endpoint)
+    return UdpTransportTarget(endpoint)
+
+
+# Passa o IP procurado e retorna (MAC, porta) varrendo a tabela ARP do switch.
+async def getSnmpMac(ip_procurado, switch_ip=None):
+    switch_ip = switch_ip or SWITCH_IP
     oid_inicial = "1.3.6.1.2.1.4.22.1.2"
     oid_atual = oid_inicial
-    
-    snmp_engine = SnmpEngine()
-    alvo_transporte = await UdpTransportTarget.create((SWITCH_IP, PORTA_SNMP))
-    
-    
-    while True:
 
+    snmp_engine = SnmpEngine()
+    alvo_transporte = await _make_target(switch_ip)
+
+    while True:
         res = next_cmd(
             snmp_engine,
             CommunityData(COMMUNITY, mpModel=1),
             alvo_transporte,
             ContextData(),
             ObjectType(ObjectIdentity(oid_atual)),
-            lexicographicMode=False
+            lexicographicMode=False,
         )
-        
-        if isinstance(res, tuple):
-            coroutine_alvo = res[0]
-        else:
-            coroutine_alvo = res
-
+        coroutine_alvo = res[0] if isinstance(res, tuple) else res
         errorIndication, errorStatus, errorIndex, varBinds = await coroutine_alvo
-        
-        
+
         if errorIndication or errorStatus or not varBinds:
             break
-            
+
         varBind = varBinds[0]
         oid_retornado = str(varBind[0])
-        valor_retornado = varBind[1].prettyPrint() 
-        
+        valor_retornado = varBind[1].prettyPrint()
 
         if not oid_retornado.startswith(oid_inicial):
             break
-            
+
         if oid_retornado.endswith(ip_procurado):
             partes_oid = oid_retornado.split('.')
-            porta_detectada = partes_oid[-5] 
-            
-            #retorna MAC e porta da interface referente ao ip solicitado
-            return (valor_retornado, porta_detectada) 
-            
-        if oid_atual == oid_retornado: 
+            porta_detectada = partes_oid[-5]
+            # retorna MAC e porta da interface referente ao ip solicitado
+            return (valor_retornado, porta_detectada)
+
+        if oid_atual == oid_retornado:
             break
 
         oid_atual = oid_retornado
 
-    #No nosso caso vai retornar None somente se der algum erro, pois como vamos gerenciar um switch teremos ip/mac das maquinas
     return None
 
-#Pega o status de todas as interfaces do switch (Up ou Down)
-async def getSnmpPort():
-    oid_base = "1.3.6.1.2.1.2.2.1.8"
-    
-    status_map = {
-        1: "Up",
-        2: "Down",
-        3: "Teste"
-    }
-    
+
+# Lê o ifAdminStatus (1.3.6.1.2.1.2.2.1.7) de cada porta — o MESMO campo que o
+# setSnmp escreve. Retorna {numero_porta: valor} com 1=up, 2=down, 3=testing,
+# None quando o switch não respondeu.
+async def getSnmpAdminStatus(switch_ip=None, num_portas=24):
+    switch_ip = switch_ip or SWITCH_IP
+    oid_base = "1.3.6.1.2.1.2.2.1.7"
     resultados = {}
-    print(f"Buscando o status das portas no agente {SWITCH_IP}...")
 
     snmp_engine = SnmpEngine()
-    
-    alvo_transporte = await UdpTransportTarget.create((SWITCH_IP, PORTA_SNMP))
+    alvo_transporte = await _make_target(switch_ip)
 
-    for porta_id in range(1, 25):
+    for porta_id in range(1, num_portas + 1):
         oid_completo = f"{oid_base}.{porta_id}"
-        
-        errorIndication, errorStatus, inderError, varBinds = await get_cmd(
+        errorIndication, errorStatus, _, varBinds = await get_cmd(
             snmp_engine,
             CommunityData(COMMUNITY, mpModel=1),
             alvo_transporte,
             ContextData(),
-            ObjectType(ObjectIdentity(oid_completo))
+            ObjectType(ObjectIdentity(oid_completo)),
         )
-        
-        if errorIndication:
-            print(f"Erro na porta {porta_id}: {errorIndication}")
-            resultados[porta_id] = "Erro de Comunicação"
-        elif errorStatus:
-            print(f"Erro na porta {porta_id}: {errorStatus.prettyPrint()}")
-            resultados[porta_id] = "Erro SNMP"
+        if errorIndication or errorStatus or not varBinds:
+            resultados[porta_id] = None
         else:
-            for varBind in varBinds:
-                val = int(varBind[1])
-                status_texto = status_map.get(val, f"Desconhecido ({val})")
-                resultados[porta_id] = status_texto
+            try:
+                resultados[porta_id] = int(varBinds[0][1])
+            except (ValueError, TypeError):
+                resultados[porta_id] = None
 
     return resultados
 
 
-#Função para fazer o set nas portas (passar a porta e o status desejado[1- para Up, 2 - para Down])
-async def setSnmp(porta_id, novo_status):
-
+# Faz o SET no ifAdminStatus de uma porta. status: 1=UP, 2=DOWN.
+# Retorna True somente se o switch confirmou a alteração.
+async def setSnmp(porta_id, novo_status, switch_ip=None):
+    switch_ip = switch_ip or SWITCH_IP
     oid_base = "1.3.6.1.2.1.2.2.1.7"
     oid_completo = f"{oid_base}.{porta_id}"
-    
+
     if novo_status not in [1, 2]:
         print("Status inválido! Use 1 para UP ou 2 para DOWN.")
         return False
 
-    print(f"Enviando SET para o switch {SWITCH_IP} (Porta {porta_id} -> Status {novo_status})...")
+    print(f"Enviando SET para {switch_ip} (Porta {porta_id} -> Status {novo_status})...")
 
     snmp_engine = SnmpEngine()
-    alvo_transporte = await UdpTransportTarget.create((SWITCH_IP, PORTA_SNMP))
+    alvo_transporte = await _make_target(switch_ip)
 
     errorIndication, errorStatus, indexError, varBinds = await set_cmd(
         snmp_engine,
-        CommunityData(COMMUNITY, mpModel=1), 
+        CommunityData(COMMUNITY, mpModel=1),
         alvo_transporte,
         ContextData(),
-        ObjectType(ObjectIdentity(oid_completo), Integer32(novo_status))
+        ObjectType(ObjectIdentity(oid_completo), Integer32(novo_status)),
     )
 
     if errorIndication:
@@ -142,25 +139,12 @@ async def setSnmp(porta_id, novo_status):
         return False
     else:
         print(f"Sucesso! Porta {porta_id} alterada com êxito.")
-        for varBind in varBinds:
-            print(f"Confirmado pelo switch: {varBind[0].prettyPrint()} = {varBind[1].prettyPrint()}")
         return True
-    
-async def setPortOn(port):
-    await setSnmp(port, 1)
-
-async def setPortOff(port):
-    await setSnmp(port, 2)
 
 
-# async def main():
+async def setPortOn(port, switch_ip=None):
+    return await setSnmp(port, 1, switch_ip)
 
-#     ip_alvo = "192.168.1.200" 
-    
-#     mac_descoberto = await getSnmpMac(ip_alvo)
-#     if mac_descoberto:
-#         print(f"Endereço MAC do host: {mac_descoberto}")
 
-# if __name__ == "__main__":
-#     asyncio.run(main())
-
+async def setPortOff(port, switch_ip=None):
+    return await setSnmp(port, 2, switch_ip)

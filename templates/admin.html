@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Administrador</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background:#0f172a; color:#e2e8f0; margin:0;}
+        header { display:flex; justify-content:space-between; align-items:center;
+                 padding:1rem 1.5rem; background:#1e293b;}
+        header a { color:#f87171; text-decoration:none;}
+        main { padding:1.5rem; max-width:1000px; margin:0 auto;}
+        section { background:#1e293b; border-radius:12px; padding:1.25rem; margin-bottom:1.5rem;}
+        h2 { font-size:1.05rem; margin-top:0; border-bottom:1px solid #334155; padding-bottom:.5rem;}
+        h3 { font-size:.9rem; color:#cbd5e1; margin:1rem 0 .25rem;}
+        table { width:100%; border-collapse:collapse; font-size:.9rem;}
+        th, td { text-align:left; padding:.5rem; border-bottom:1px solid #334155;}
+        .badge { padding:.15rem .5rem; border-radius:999px; font-size:.75rem; font-weight:600;}
+        .on { background:#14532d; color:#86efac;}
+        .off { background:#7f1d1d; color:#fecaca;}
+        .res { background:#374151; color:#cbd5e1;}
+        .ok { background:#14532d; color:#86efac;}
+        .bad { background:#78350f; color:#fde68a;}
+        button { border:0; border-radius:6px; padding:.4rem .7rem; cursor:pointer; font-weight:600;}
+        .block { background:#ef4444; color:white;}
+        .unblock { background:#22c55e; color:white;}
+        .del { background:#64748b; color:white;}
+        input, select { padding:.5rem; border-radius:6px; border:1px solid #334155;
+                background:#0f172a; color:#e2e8f0;}
+        form.inline { display:inline;}
+        .row { display:flex; gap:.5rem; flex-wrap:wrap; align-items:end; margin-top:.5rem;}
+        .row label { display:flex; flex-direction:column; font-size:.75rem; color:#94a3b8; gap:.25rem;}
+        .erro { background:#7f1d1d; color:#fecaca; padding:.7rem 1rem; border-radius:8px; margin-bottom:1rem;}
+        .note { color:#94a3b8; font-size:.8rem; margin:.25rem 0 .75rem;}
+    </style>
+</head>
+<body>
+    <header>
+        <strong>👑 Administrador — {{ user.login }}</strong>
+        <span>
+            <a href="/dashboard" style="color:#93c5fd; text-decoration:none; margin-right:1rem;">🔄 Atualizar</a>
+            <a href="/logout">Sair</a>
+        </span>
+    </header>
+    <main>
+        {% if erro %}<div class="erro">⚠️ {{ erro }}</div>{% endif %}
+
+        <section>
+            <h2>Portas dos switches</h2>
+            <p class="note">
+                "Banco" é o estado que o sistema pretende; "Switch (ao vivo)" é lido
+                em tempo real do equipamento por SNMP. Se baterem, o comando foi
+                aplicado de fato no switch.
+            </p>
+            {% for s in switches %}
+            <h3>{{ s.nome }} <span style="color:#64748b">({{ s.ip_addr }})</span></h3>
+            <table>
+                <tr><th>Porta</th><th>Banco</th><th>Switch (ao vivo)</th><th>Confere?</th><th>Ação</th></tr>
+                {% for l in linhas %}{% if l.switch_id == s.id %}
+                <tr>
+                    <td>{{ l.porta }}</td>
+                    <td>
+                        {% if l.reservada %}<span class="badge res">Reservada</span>
+                        {% elif l.status %}<span class="badge on">Liberada</span>
+                        {% else %}<span class="badge off">Bloqueada</span>{% endif %}
+                    </td>
+                    <td>{{ l.switch_label }}</td>
+                    <td>
+                        {% if l.reservada %}—
+                        {% elif l.ok %}<span class="badge ok">OK</span>
+                        {% else %}<span class="badge bad">Divergente</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if not l.reservada %}
+                        <form class="inline" method="post" action="/admin/porta/toggle">
+                            <input type="hidden" name="porta_id" value="{{ l.Id }}">
+                            {% if l.status %}
+                            <input type="hidden" name="action" value="block">
+                            <button class="block">Bloquear</button>
+                            {% else %}
+                            <input type="hidden" name="action" value="unblock">
+                            <button class="unblock">Liberar</button>
+                            {% endif %}
+                        </form>
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% endif %}{% endfor %}
+            </table>
+            {% endfor %}
+        </section>
+
+        <section>
+            <h2>Agendamentos</h2>
+            <table>
+                <tr><th>#</th><th>Criado por</th><th>Portas</th><th>Início</th><th>Fim</th><th>Status</th><th></th></tr>
+                {% for a in agendamentos %}
+                <tr>
+                    <td>{{ a.id }}</td><td>{{ a.criador }}</td>
+                    <td>{{ a.portas|join(', ') }}</td>
+                    <td>{{ a.inicio }}</td><td>{{ a.fim }}</td>
+                    <td>
+                        {% if a.status == 'ativo' %}<span class="badge on">ativo</span>
+                        {% elif a.status == 'pendente' %}<span class="badge" style="background:#1e3a5f;color:#93c5fd">pendente</span>
+                        {% elif a.status == 'concluido' %}<span class="badge res">concluído</span>
+                        {% else %}<span class="badge" style="background:#431407;color:#fdba74">cancelado</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if a.status in ('pendente', 'ativo') %}
+                        <form class="inline" method="post" action="/agendamento/cancel">
+                            <input type="hidden" name="agendamento_id" value="{{ a.id }}">
+                            <button class="del">Cancelar</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7">Nenhum agendamento.</td></tr>
+                {% endfor %}
+            </table>
+        </section>
+
+        <section>
+            <h2>Professores</h2>
+            <table>
+                <tr><th>Login</th><th>MAC</th><th></th></tr>
+                {% for prof in professores %}
+                <tr>
+                    <td>{{ prof.login }}</td><td>{{ prof.mac_addr }}</td>
+                    <td>
+                        <form class="inline" method="post" action="/admin/professor/delete">
+                            <input type="hidden" name="user_id" value="{{ prof.id }}">
+                            <button class="del">Remover</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3">Nenhum professor cadastrado.</td></tr>
+                {% endfor %}
+            </table>
+            <form method="post" action="/admin/professor/create" class="row">
+                <label>Login<input name="login" required></label>
+                <label>Senha<input name="senha" type="text" required></label>
+                <label>MAC<input name="mac" placeholder="AA:BB:CC:DD:EE:FF" required></label>
+                <button class="unblock">Cadastrar professor</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

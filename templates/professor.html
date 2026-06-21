@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Professor</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+
+        /* ── Header ── */
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: .875rem 1.5rem; background: #1e293b;
+            border-bottom: 1px solid #334155; position: sticky; top: 0; z-index: 10;
+        }
+        .header-left { display: flex; align-items: center; gap: .75rem; }
+        .avatar {
+            width: 36px; height: 36px; border-radius: 50%; background: #3b82f6;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; font-weight: 700; color: white; flex-shrink: 0;
+        }
+        .header-info-name  { font-size: .95rem; font-weight: 600; }
+        .header-info-role  { font-size: .72rem; color: #64748b; }
+        .header-right      { display: flex; align-items: center; gap: 1.25rem; }
+        .live-badge        { display: flex; align-items: center; gap: .35rem; font-size: .72rem; color: #64748b; }
+        .live-dot          { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; animation: blink 2s infinite; flex-shrink: 0; }
+        @keyframes blink   { 0%,100%{opacity:1} 50%{opacity:.3} }
+        .logout            { color: #f87171; text-decoration: none; font-size: .875rem; }
+
+        /* ── Layout ── */
+        main { padding: 1.5rem; max-width: 1020px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.25rem; }
+
+        /* ── Card ── */
+        .card { background: #1e293b; border-radius: 12px; border: 1px solid #334155; overflow: hidden; }
+        .card-header {
+            padding: .875rem 1.25rem; border-bottom: 1px solid #334155;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .card-title   { font-size: .9rem; font-weight: 600; }
+        .card-body    { padding: 1.25rem; }
+
+        /* ── Alert ── */
+        .alert { background: #450a0a; color: #fca5a5; padding: .75rem 1rem; border-radius: 8px;
+                 font-size: .85rem; border: 1px solid #7f1d1d; }
+
+        /* ── Switch section ── */
+        .sw-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: .5rem; }
+        .sw-name   { font-size: .75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em; }
+        .sw-stats  { font-size: .7rem; color: #475569; }
+        hr.divider { border: 0; border-top: 1px solid #1e293b; margin: 1rem 0; }
+
+        /* ── Port grid ── */
+        .ports { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: .35rem; margin-bottom: .5rem; }
+
+        .port-card {
+            background: #0f172a; border: 1.5px solid #334155; border-radius: 8px;
+            padding: .5rem .6rem; cursor: pointer; display: flex; flex-direction: column;
+            gap: .3rem; user-select: none; transition: border-color .15s, background .15s;
+        }
+        .port-card:hover:not(.is-reserved) { border-color: #3b82f6; }
+        .port-card.is-reserved  { opacity: .45; cursor: not-allowed; border-style: dashed; }
+        .port-card.is-blocked   { border-color: #7f1d1d; background: #0d0505; }
+        .port-card.is-selected  { border-color: #3b82f6; background: #0c1929; }
+
+        /* hidden real checkbox */
+        .port-card input[type=checkbox] { position: absolute; opacity: 0; pointer-events: none; }
+
+        .port-row { display: flex; justify-content: space-between; align-items: center; }
+        .port-num { font-size: .8rem; font-weight: 700; }
+        .port-sel-dot {
+            width: 12px; height: 12px; border-radius: 3px; border: 1.5px solid #475569;
+            flex-shrink: 0; transition: background .12s, border-color .12s;
+        }
+        .port-card.is-selected .port-sel-dot { background: #3b82f6; border-color: #3b82f6; }
+
+        /* ── Tags ── */
+        .tag { display: inline-block; padding: .1rem .4rem; border-radius: 999px; font-size: .62rem; font-weight: 700; }
+        .tag-on       { background: #14532d; color: #86efac; }
+        .tag-off      { background: #7f1d1d; color: #fecaca; }
+        .tag-res      { background: #1e293b; color: #475569; border: 1px solid #334155; }
+        .tag-pendente { background: #1e3a5f; color: #93c5fd; }
+        .tag-ativo    { background: #14532d; color: #86efac; }
+        .tag-concluido{ background: #1e293b; color: #64748b; border: 1px solid #334155; }
+        .tag-cancelado{ background: #431407; color: #fdba74; }
+
+        /* ── Form ── */
+        .form-row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; margin-top: 1.1rem; padding-top: 1rem; border-top: 1px solid #334155; }
+        .form-field { display: flex; flex-direction: column; gap: .35rem; }
+        .form-label { font-size: .72rem; color: #94a3b8; font-weight: 600; letter-spacing: .03em; }
+        .form-input {
+            padding: .5rem .7rem; border-radius: 6px; border: 1px solid #334155;
+            background: #0f172a; color: #e2e8f0; font-size: .875rem;
+        }
+        .form-input:focus    { outline: none; border-color: #3b82f6; }
+        .form-input:disabled { opacity: .35; cursor: not-allowed; }
+
+        .now-row    { display: flex; align-items: center; gap: .5rem; padding-bottom: 1px; }
+        .cb-label   { display: flex; align-items: center; gap: .4rem; font-size: .8rem; cursor: pointer; }
+        .cb-label input { width: 15px; height: 15px; accent-color: #3b82f6; cursor: pointer; }
+        .now-pill {
+            font-size: .72rem; color: #93c5fd; background: #0f2744; padding: .25rem .6rem;
+            border-radius: 6px; border: 1px solid #1e3a5f; display: none;
+        }
+
+        /* ── Buttons ── */
+        .btn { border: 0; border-radius: 6px; padding: .5rem 1rem; cursor: pointer; font-weight: 600; font-size: .875rem; }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-cancel { background: transparent; color: #f87171; border: 1px solid #7f1d1d; font-size: .75rem; padding: .25rem .6rem; border-radius: 6px; cursor: pointer; }
+        .btn-cancel:hover { background: #7f1d1d22; }
+
+        /* ── Table ── */
+        table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+        thead th {
+            text-align: left; padding: .625rem .875rem;
+            font-size: .67rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .06em; color: #475569; border-bottom: 1px solid #334155;
+        }
+        tbody td { padding: .625rem .875rem; border-bottom: 1px solid #334155; color: #cbd5e1; }
+        tbody tr:last-child td { border-bottom: 0; }
+        tbody tr:hover td { background: rgba(255,255,255,.02); }
+        .empty td { color: #475569; text-align: center; padding: 2.5rem; font-size: .85rem; }
+        .ports-cell { color: #94a3b8; font-size: .78rem; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-left">
+        <div class="avatar">{{ user.login[0]|upper }}</div>
+        <div>
+            <div class="header-info-name">{{ user.login }}</div>
+            <div class="header-info-role">Professor</div>
+        </div>
+    </div>
+    <div class="header-right">
+        <div class="live-badge">
+            <div class="live-dot"></div>
+            <span id="refresh-text">conectando…</span>
+        </div>
+        <a href="/logout" class="logout">Sair</a>
+    </div>
+</header>
+
+<main>
+    {% if erro %}
+    <div class="alert">⚠ {{ erro }}</div>
+    {% endif %}
+
+    <!-- ── Scheduling form ── -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Agendar bloqueio de acesso</span>
+        </div>
+        <div class="card-body">
+            <form method="post" action="/prof/agendamento/create">
+                {% for s in switches %}
+                {% if not loop.first %}<hr class="divider">{% endif %}
+                <div class="sw-header">
+                    <span class="sw-name">{{ s.nome }}</span>
+                    <span class="sw-stats" id="stats-{{ s.id }}"></span>
+                </div>
+                <div class="ports">
+                    {% for p in portas %}{% if p.switch == s.id %}
+                    <div class="port-card {% if p.reservada %}is-reserved{% elif not p.status %}is-blocked{% endif %}"
+                         id="card-{{ p.Id }}"
+                         {% if not p.reservada %}onclick="togglePort({{ p.Id }}, this)"{% endif %}>
+                        <input type="checkbox" name="porta_ids" value="{{ p.Id }}"
+                               id="chk-{{ p.Id }}"
+                               {% if p.reservada %}disabled{% endif %}>
+                        <div class="port-row">
+                            <span class="port-num">P{{ p.porta }}</span>
+                            <div class="port-sel-dot" id="dot-{{ p.Id }}"></div>
+                        </div>
+                        {% if p.reservada %}
+                            <span class="tag tag-res" id="badge-{{ p.Id }}">reservada</span>
+                        {% elif p.status %}
+                            <span class="tag tag-on" id="badge-{{ p.Id }}">liberada</span>
+                        {% else %}
+                            <span class="tag tag-off" id="badge-{{ p.Id }}">bloqueada</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}{% endfor %}
+                </div>
+                {% endfor %}
+
+                <div class="form-row">
+                    <div class="form-field">
+                        <span class="form-label">Início</span>
+                        <input id="inicio" type="datetime-local" name="inicio" class="form-input">
+                    </div>
+                    <div class="form-field" style="justify-content: flex-end;">
+                        <div class="now-row">
+                            <label class="cb-label">
+                                <input id="inicio_now" type="checkbox" name="inicio_now" value="1">
+                                Iniciar agora
+                            </label>
+                            <span class="now-pill" id="now-pill"></span>
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Fim <span style="color:#f87171">*</span></span>
+                        <input type="datetime-local" name="fim" class="form-input" required>
+                    </div>
+                    <div class="form-field" style="justify-content: flex-end;">
+                        <button type="submit" class="btn btn-primary">Agendar bloqueio</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ── Schedule history ── -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Meus agendamentos</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Portas</th>
+                    <th>Início</th>
+                    <th>Fim</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="tbody-ags">
+                {% for a in agendamentos %}
+                <tr id="ag-{{ a.id }}">
+                    <td>{{ a.id }}</td>
+                    <td class="ports-cell">{{ a.portas|join(', ') }}</td>
+                    <td>{{ a.inicio }}</td>
+                    <td>{{ a.fim }}</td>
+                    <td><span class="tag tag-{{ a.status }}" id="ag-status-{{ a.id }}">{{ a.status }}</span></td>
+                    <td>
+                        {% if a.status in ('pendente', 'ativo') %}
+                        <form method="post" action="/agendamento/cancel" style="display:inline">
+                            <input type="hidden" name="agendamento_id" value="{{ a.id }}">
+                            <button type="submit" class="btn-cancel">Cancelar</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr class="empty"><td colspan="6">Nenhum agendamento ainda.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<script>
+// ── Port toggle ──────────────────────────────────────────────────────────────
+function togglePort(id, card) {
+    const chk = document.getElementById('chk-' + id);
+    const dot = document.getElementById('dot-' + id);
+    if (chk.disabled) return;
+    chk.checked = !chk.checked;
+    if (chk.checked) {
+        card.classList.add('is-selected');
+        dot.style.cssText = 'background:#3b82f6;border-color:#3b82f6';
+    } else {
+        card.classList.remove('is-selected');
+        dot.style.cssText = '';
+    }
+}
+
+// ── Iniciar agora ────────────────────────────────────────────────────────────
+const inicioNow = document.getElementById('inicio_now');
+const inicioInp = document.getElementById('inicio');
+const nowPill   = document.getElementById('now-pill');
+
+inicioNow.addEventListener('change', function () {
+    if (this.checked) {
+        inicioInp.disabled = true;
+        const d = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        nowPill.textContent =
+            pad(d.getDate()) + '/' + pad(d.getMonth()+1) + '/' + d.getFullYear() +
+            ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+        nowPill.style.display = 'inline-block';
+    } else {
+        inicioInp.disabled = false;
+        nowPill.style.display = 'none';
+    }
+});
+
+// ── Auto-refresh ─────────────────────────────────────────────────────────────
+async function refreshPorts() {
+    try {
+        const res = await fetch('/api/portas');
+        if (!res.ok) return;
+        const portas = await res.json();
+
+        const stats = {}; // sw_id -> {free, blocked, reserved}
+
+        portas.forEach(p => {
+            const sid = p.switch;
+            if (!stats[sid]) stats[sid] = { free: 0, blocked: 0, reserved: 0 };
+
+            if (p.reservada) { stats[sid].reserved++; return; }
+
+            const badge = document.getElementById('badge-' + p.Id);
+            const card  = document.getElementById('card-' + p.Id);
+            if (!badge || !card) return;
+
+            const wasSelected = card.classList.contains('is-selected');
+
+            if (p.status) {
+                badge.textContent = 'liberada';
+                badge.className   = 'tag tag-on';
+                card.classList.remove('is-blocked');
+                stats[sid].free++;
+            } else {
+                badge.textContent = 'bloqueada';
+                badge.className   = 'tag tag-off';
+                card.classList.add('is-blocked');
+                stats[sid].blocked++;
+            }
+
+            if (wasSelected) card.classList.add('is-selected');
+        });
+
+        Object.entries(stats).forEach(([sid, s]) => {
+            const el = document.getElementById('stats-' + sid);
+            if (el) el.textContent = s.free + ' livres · ' + s.blocked + ' bloqueadas · ' + s.reserved + ' reservadas';
+        });
+
+        const now = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        document.getElementById('refresh-text').textContent =
+            'atualizado ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+    } catch (e) {
+        document.getElementById('refresh-text').textContent = 'sem conexão';
+    }
+}
+
+async function refreshAgendamentos() {
+    try {
+        const res = await fetch('/api/agendamentos');
+        if (!res.ok) return;
+        const ags = await res.json();
+
+        ags.forEach(a => {
+            const badge = document.getElementById('ag-status-' + a.id);
+            if (badge) {
+                badge.textContent = a.status;
+                badge.className = 'tag tag-' + a.status;
+            }
+        });
+    } catch (e) {}
+}
+
+// Primeira leitura imediata, depois a cada 5 segundos.
+refreshPorts();
+refreshAgendamentos();
+setInterval(() => { refreshPorts(); refreshAgendamentos(); }, 5000);
+</script>
+</body>
+</html>
