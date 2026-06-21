@@ -22,7 +22,6 @@ async def getSnmpMac(ip_procurado):
     snmp_engine = SnmpEngine()
     alvo_transporte = await UdpTransportTarget.create((SWITCH_IP, PORTA_SNMP))
     
-    # print(f"Varrendo a tabela ARP para encontrar o MAC do IP: {ip_procurado}...")
     
     while True:
 
@@ -66,7 +65,7 @@ async def getSnmpMac(ip_procurado):
 
         oid_atual = oid_retornado
 
-    #MAC não encontrado 
+    #No nosso caso vai retornar None somente se der algum erro, pois como vamos gerenciar um switch teremos ip/mac das maquinas
     return None
 
 #Pega o status de todas as interfaces do switch (Up ou Down)
