@@ -1,6 +1,5 @@
 import sqlite3
 
-
 DB_NAME = "database.db"
 
 def get_db_connection():
@@ -130,6 +129,17 @@ def popular_tabelas():
     finally:
         conn.close()
 
+def verify_admin(mac):
+    conn =  get_db_connection()
+    cursor = conn.cursor()
+    print(mac)
+    cursor.execute('SELECT * FROM usuario WHERE TRIM("mac_addr") = TRIM(?)',(mac,))
+
+    get = cursor.fetchone()
+
+    conn.close()
+    return dict(get) if get else None
+
 # Executa a função
-if __name__ == "__main__":
-    popular_tabelas()
+# if __name__ == "__main__":
+#     popular_tabelas()

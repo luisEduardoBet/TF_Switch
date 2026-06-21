@@ -153,14 +153,14 @@ async def setPortOff(port):
     await setSnmp(port, 2)
 
 
-async def main():
+# async def main():
 
-    ip_alvo = "192.168.1.200" 
+#     ip_alvo = "192.168.1.200" 
     
-    mac_descoberto = await getSnmpMac(ip_alvo)
-    if mac_descoberto:
-        print(f"Endereço MAC do host: {mac_descoberto}")
+#     mac_descoberto = await getSnmpMac(ip_alvo)
+#     if mac_descoberto:
+#         print(f"Endereço MAC do host: {mac_descoberto}")
 
-if __name__ == "__main__":
-    asyncio.run(main())
+# if __name__ == "__main__":
+#     asyncio.run(main())
 
