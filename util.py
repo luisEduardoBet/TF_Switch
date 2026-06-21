@@ -10,7 +10,7 @@ def get_client_ip(request):
     return request.META.get("REMOTE_ADDR")
 
 
-#passa o ip e retorna o MAC
+#passa o ip e retorna o MAC e porta do IP solicitante.
 async def getSnmpMac(ip_procurado):
     """
     Varre a tabela ARP do switch e retorna o MAC correspondente ao IP solicitado,
@@ -22,7 +22,7 @@ async def getSnmpMac(ip_procurado):
     snmp_engine = SnmpEngine()
     alvo_transporte = await UdpTransportTarget.create((SWITCH_IP, PORTA_SNMP))
     
-    print(f"Varrendo a tabela ARP para encontrar o MAC do IP: {ip_procurado}...")
+    # print(f"Varrendo a tabela ARP para encontrar o MAC do IP: {ip_procurado}...")
     
     while True:
 
@@ -41,7 +41,8 @@ async def getSnmpMac(ip_procurado):
             coroutine_alvo = res
 
         errorIndication, errorStatus, errorIndex, varBinds = await coroutine_alvo
-            
+        
+        
         if errorIndication or errorStatus or not varBinds:
             break
             
@@ -49,7 +50,6 @@ async def getSnmpMac(ip_procurado):
         oid_retornado = str(varBind[0])
         valor_retornado = varBind[1].prettyPrint() 
         
-        print(oid_retornado)
 
         if not oid_retornado.startswith(oid_inicial):
             break
@@ -58,12 +58,15 @@ async def getSnmpMac(ip_procurado):
             partes_oid = oid_retornado.split('.')
             porta_detectada = partes_oid[-5] 
             
-            print(f"[Achou!] O IP {ip_procurado} foi localizado na porta {porta_detectada}.")
-            return valor_retornado
+            #retorna MAC e porta da interface referente ao ip solicitado
+            return (valor_retornado, porta_detectada) 
             
+        if oid_atual == oid_retornado: 
+            break
+
         oid_atual = oid_retornado
 
-    print(f"[Aviso] O IP {ip_procurado} não foi encontrado na tabela ARP do switch.")
+    #MAC não encontrado 
     return None
 
 #Pega o status de todas as interfaces do switch (Up ou Down)
@@ -143,3 +146,22 @@ async def setSnmp(porta_id, novo_status):
         for varBind in varBinds:
             print(f"Confirmado pelo switch: {varBind[0].prettyPrint()} = {varBind[1].prettyPrint()}")
         return True
+    
+async def setPortOn(port):
+    await setSnmp(port, 1)
+
+async def setPortOff(port):
+    await setSnmp(port, 2)
+
+
+async def main():
+
+    ip_alvo = "192.168.1.200" 
+    
+    mac_descoberto = await getSnmpMac(ip_alvo)
+    if mac_descoberto:
+        print(f"Endereço MAC do host: {mac_descoberto}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
