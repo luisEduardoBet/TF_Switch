@@ -9,6 +9,7 @@ import os
 # IP/porta/community padrão do switch (usados quando nenhum IP é passado).
 SWITCH_IP = os.getenv('SWITCH_IP', '127.0.0.1')
 COMMUNITY = os.getenv('SWITCH_COMMUNITY', 'switch')
+COMMUNITY_WRITE = os.getenv('SWITCH_COMMUNITY_WRITE', COMMUNITY)  # fallback para a mesma community
 PORTA_SNMP = int(os.getenv('SWITCH_PORT', '1161'))
 
 
@@ -125,7 +126,7 @@ async def setSnmp(porta_id, novo_status, switch_ip=None):
 
     errorIndication, errorStatus, indexError, varBinds = await set_cmd(
         snmp_engine,
-        CommunityData(COMMUNITY, mpModel=1),
+        CommunityData(COMMUNITY_WRITE, mpModel=1),
         alvo_transporte,
         ContextData(),
         ObjectType(ObjectIdentity(oid_completo), Integer32(novo_status)),

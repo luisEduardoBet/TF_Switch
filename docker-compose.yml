@@ -15,12 +15,13 @@ services:
     build: .
     environment:
       - TZ=America/Sao_Paulo
-      - SWITCH_IP=snmpsim
-      - SWITCH_PORT=1161
-      - SWITCH_COMMUNITY=switch
+      - SWITCH_IP=snmpsim #mudar para ip do switch real 192.168.1.1 
+      - SWITCH_PORT=1161 #mudar para porta do switch real provavelmente 161
+      - SWITCH_COMMUNITY=switch        # community de leitura (ex: public)
+      - SWITCH_COMMUNITY_WRITE=switch  # community de escrita (ex: private); se omitida, usa a de leitura
       - SECRET_KEY=troque-esta-chave-em-producao
       - REQUIRE_MAC=1
     ports:
       - "8000:8000"
-    depends_on:
-      - snmpsim
+    depends_on:   #comentar no teste real
+      - snmpsim   #comentar no teste real
