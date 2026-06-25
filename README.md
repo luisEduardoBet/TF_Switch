@@ -13,7 +13,7 @@ Desenvolvido como Trabalho Final da disciplina de **Gerência e Mobilidade de Re
 A tela de login é o ponto de partida para professores e administradores. 
 
 * **Como acessar:** Insira o seu **Usuário** e **Senha** padrão nos campos correspondentes e clique em **Entrar**.
-* **Tratamento de Erros:** Se as credenciais estiverem incorretas, um alerta vermelho (`⚠`) aparecerá no topo da caixinha informando o problema.
+* **Tratamento de Erros:** Se as credenciais estiverem incorretas, um alerta vermelho aparecerá no topo da caixinha informando o problema.
 
 <img width="1600" height="860" alt="login" src="https://github.com/user-attachments/assets/368c67c6-6b52-409a-b434-3411dc4033b2" />
 
@@ -35,7 +35,7 @@ Este painel é destinado aos docentes para que possam gerenciar o uso da interne
 2. **Escolha o Horário de Início:**
    * Se quiser que o bloqueio comece imediatamente, marque a caixa **"Iniciar agora"** (o sistema mostrará o horário atual do servidor).
    * Se quiser programar para mais tarde, deixe a caixa desmarcada e digite o dia e horário no campo **Início**.
-4. **Defina o Horário de Término:** No campo **Fim** (obrigatório, marcado com `*`), insira o horário exato em que a internet deve voltar a funcionar para os alunos.
+4. **Defina o Horário de Término:** No campo **Fim**, insira o horário exato em que a internet deve voltar a funcionar para os alunos.
 5. **Confirmar:** Clique no botão azul **"Agendar bloqueio"**.
 
 #### Gerenciando seus Agendamentos
