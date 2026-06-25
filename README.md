@@ -69,7 +69,10 @@ Diferente dos professores, o administrador pode interferir na rede em tempo real
 
 #### Agendamentos Globais e Gerenciamento de Professores
 * **Controle de Agendamentos:** O administrador visualiza as reservas de todas as salas e de todos os professores da instituição, possuindo autoridade para **Cancelar** qualquer um deles a qualquer momento.
-* **Cadastro de Professores:** No formulário inferior, insira o `Login`, `Senha` e o endereço `MAC` da máquina de trabalho do docente (Exemplo de formato: `AA:BB:CC:DD:EE:FF`).
+* **Cadastro de Professores:** No formulário inferior, insira o `Login`, `Senha` e o endereço `MAC` da máquina de trabalho do docente. 
+  * **Atenção ao formato do MAC:** O caractere separador depende do sistema operacional do computador do professor:
+    * No **Linux**, utilize dois-pontos (`:`). Exemplo: `AA:BB:CC:DD:EE:FF`
+    * No **Windows**, utilize hífen (`-`). Exemplo: `AA-BB-CC-DD-EE-FF`
 * **Remoção:** Exclua cadastros instantaneamente clicando no botão cinza **"Remover"**.
 <img width="1600" height="860" alt="adm1" src="https://github.com/user-attachments/assets/b81d97f1-e135-4dd4-adf1-3256fa97bdee" />
 <img width="1600" height="860" alt="adm2" src="https://github.com/user-attachments/assets/2b8e2ea9-c981-428f-8746-0a045c71c6a1" />
