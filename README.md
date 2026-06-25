@@ -32,12 +32,11 @@ Este painel é destinado aos docentes para que possam gerenciar o uso da interne
 
 #### Como Agendar um Bloqueio de Internet (Passo a Passo)
 1. **Selecione os Computadores:** Clique em cima dos quadrados das portas que deseja bloquear. Ao clicar, elas ganharão uma **borda azul**, indicando que estão selecionadas.
-2. **Escolha o Horário de Início:** * Se quiser que o bloqueio comece imediatamente, marque a caixa **"Iniciar agora"** (o sistema mostrará o horário atual do servidor).
+2. **Escolha o Horário de Início:**
+   * Se quiser que o bloqueio comece imediatamente, marque a caixa **"Iniciar agora"** (o sistema mostrará o horário atual do servidor).
    * Se quiser programar para mais tarde, deixe a caixa desmarcada e digite o dia e horário no campo **Início**.
-3. **Defina o Horário de Término:** No campo **Fim** (obrigatório, marcado com `*`), insira o horário exato em que a internet deve voltar a funcionar para os alunos.
-4. **Confirmar:** Clique no botão azul **"Agendar bloqueio"**.
-
-<img width="1600" height="860" alt="prof1" src="https://github.com/user-attachments/assets/b4579704-a695-471e-b130-f74e81f532e0" />
+4. **Defina o Horário de Término:** No campo **Fim** (obrigatório, marcado com `*`), insira o horário exato em que a internet deve voltar a funcionar para os alunos.
+5. **Confirmar:** Clique no botão azul **"Agendar bloqueio"**.
 
 #### Gerenciando seus Agendamentos
 Na tabela **"Meus agendamentos"** (no rodapé da página), você pode acompanhar suas solicitações:
@@ -48,6 +47,7 @@ Na tabela **"Meus agendamentos"** (no rodapé da página), você pode acompanhar
   * `cancelado`: O agendamento foi interrompido antes da hora.
 * **Como Cancelar:** Se você terminar a atividade mais cedo e quiser devolver a internet aos alunos, vá até a tabela, encontre o agendamento em estado `ativo` ou `pendente` e clique no botão vermelho **"Cancelar"**.
 
+<img width="1600" height="860" alt="prof1" src="https://github.com/user-attachments/assets/b4579704-a695-471e-b130-f74e81f532e0" />
 <img width="1600" height="860" alt="prof2" src="https://github.com/user-attachments/assets/ea290066-a4ff-4782-b8b4-b163a83742dd" />
 <img width="1600" height="860" alt="prof3" src="https://github.com/user-attachments/assets/ea9fb8d5-38fe-4ddb-b42a-ba4a8267fdc0" />
 
