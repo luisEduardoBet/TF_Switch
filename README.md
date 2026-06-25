@@ -1,6 +1,6 @@
 # TF_Switch
 
-Plataforma web para controle de acesso à internet em laboratórios de informática. O professor bloqueia portas de um switch gerenciável via SNMP diretamente pelo navegador, sem precisar acessar o equipamento.
+Plataforma web para controle de acesso à internet em laboratórios de informática da UDESC. O professor ou administrador pode bloquear e liberar portas de um switch gerenciável diretamente pelo navegador, sem a necessidade de acessar o equipamento físico ou digitar linhas de comando.
 
 Desenvolvido como Trabalho Final da disciplina de **Gerência e Mobilidade de Redes** — UDESC.
 
@@ -8,89 +8,75 @@ Desenvolvido como Trabalho Final da disciplina de **Gerência e Mobilidade de Re
 ## Manual de Utilização da Interface Gráfica (UI)
 ---
 
-### Funcionalidades
+### 1. Tela de Login e Acesso à Rede
 
-#### Administrador
-- Bloqueia ou libera qualquer porta imediatamente (sem agendamento)
-- Ação manual cancela automaticamente qualquer agendamento ativo naquela porta
-- Visualiza status de cada porta em duas colunas: **Banco** (intenção do sistema) vs **Switch ao vivo** (leitura SNMP real), com indicador de divergência
-- Cancela agendamentos de qualquer professor
-- Cadastra e remove professores
+A tela de login é o ponto de partida para professores e administradores. 
 
-#### Professor
-- Seleciona portas e agenda um período de bloqueio (início + fim)
-- Opção **"Iniciar agora"** (exibe o horário exato que será usado)
-- Vê o status atual de todas as portas em tempo real (sem recarregar a página)
-- Portas reservadas aparecem visualmente, mas não podem ser selecionadas
-- Histórico de agendamentos com status: `pendente → ativo → concluído` (ou `cancelado`)
+* **Como acessar:** Insira o seu **Usuário** e **Senha** padrão nos campos correspondentes e clique em **Entrar**.
+* **Tratamento de Erros:** Se as credenciais estiverem incorretas, um alerta vermelho (`⚠`) aparecerá no topo da caixinha informando o problema.
 
-#### Automação
-- O bloqueio e a liberação das portas acontecem automaticamente nos horários agendados via **APScheduler**
-- Agendamentos pendentes são reagendados automaticamente se o servidor reiniciar
-
----
-
-### 1. Tela de Login
-Interface de autenticação simples e direta para acesso aos painéis de controle.
-
-* **Como acessar:** Insira suas credenciais de acesso nos campos **Usuário** e **Senha** e clique em **Entrar**.
-* **Tratamento de Erros:** Caso as credenciais estejam incorretas, um alerta vermelho (`⚠`) será exibido no topo do cartão informando o problema.
 <img width="1600" height="860" alt="login" src="https://github.com/user-attachments/assets/368c67c6-6b52-409a-b434-3411dc4033b2" />
+
 ---
 
 ### 2. Painel do Professor
-Destinado aos docentes para visualização do estado atual das portas e criação de agendamentos temporários de bloqueio.
 
-#### Elementos da Interface
-* Exibe o nome do professor logado e um indicador em tempo real (`conectando...` ou `atualizado HH:MM:SS`) que realiza leituras automáticas na API do switch a cada **5 segundos**.
-* Representação visual de cada porta dividida por switch:
-  * <kbd>liberada</kbd> (Verde): Porta ativa e com tráfego liberado.
-  * <kbd>bloqueada</kbd> (Vermelho): Porta com acesso cortado.
-  * <kbd>reservada</kbd> (Pontilhado/Opaco): Porta protegida pelo sistema (não permite interação).
+Este painel é destinado aos docentes para que possam gerenciar o uso da internet pelos alunos durante o horário de suas aulas.
 
-#### Como Agendar um Bloqueio de Acesso
-1. **Selecione as Portas:** Clique sobre os cards das portas desejadas no Grid. Elas ficarão com uma borda azul destacada indicando a seleção.
-2. **Defina o Início:** * Preencha o campo **Início** com a data e horário desejados, **OU**
-   * Marque a caixa **"Iniciar agora"** para que o bloqueio entre em vigor imediatamente.
-3. **Defina o Fim:** Preencha obrigatoriamente o campo **Fim** (marcado com `*`).
-4. **Confirmar:** Clique no botão **"Agendar bloqueio"**.
+#### Interface
+* **Monitoramento Automático:** No topo superior direito, ao lado do botão "Sair", há um indicador de conexão (`conectando...` ou `atualizado HH:MM:SS`). A página lê o estado do switch a cada **5 segundos**, atualizando a tela para você sem que precise recarregar o navegador.
+* **Mapa de Portas (Quadrados correspondentes às bancadas):**
+  * <kbd>liberada</kbd> (Verde): Computadores desta porta **possuem** acesso à internet.
+  * <kbd>bloqueada</kbd> (Vermelho): Computadores desta porta **estão sem** acesso à internet.
+  * <kbd>reservada</kbd> (Cinza opaco/Pontilhado): Portas da mesa do professor ou de servidores da sala. São protegidas e não podem ser desligadas.
 
-#### Meus Agendamentos
-Tabela localizada no rodapé da página que lista o histórico e o status dos pedidos do usuário logado:
-* **Status possíveis:** `pendente`, `ativo`, `concluído` ou `cancelado`.
-* **Cancelamento:** Se um agendamento estiver com o status `pendente` ou `ativo`, um botão **"Cancelar"** estará disponível para interromper a ação imediatamente. 
+#### Como Agendar um Bloqueio de Internet (Passo a Passo)
+1. **Selecione os Computadores:** Clique em cima dos quadrados das portas que deseja bloquear. Ao clicar, elas ganharão uma **borda azul**, indicando que estão selecionadas.
+2. **Escolha o Horário de Início:** * Se quiser que o bloqueio comece imediatamente, marque a caixa **"Iniciar agora"** (o sistema mostrará o horário atual do servidor).
+   * Se quiser programar para mais tarde, deixe a caixa desmarcada e digite o dia e horário no campo **Início**.
+3. **Defina o Horário de Término:** No campo **Fim** (obrigatório, marcado com `*`), insira o horário exato em que a internet deve voltar a funcionar para os alunos.
+4. **Confirmar:** Clique no botão azul **"Agendar bloqueio"**.
+
 <img width="1600" height="860" alt="prof1" src="https://github.com/user-attachments/assets/b4579704-a695-471e-b130-f74e81f532e0" />
+
+#### Gerenciando seus Agendamentos
+Na tabela **"Meus agendamentos"** (no rodapé da página), você pode acompanhar suas solicitações:
+* **Status do Processo:**
+  * `pendente`: O agendamento foi salvo e aguarda o horário de início para agir.
+  * `ativo`: O bloqueio está acontecendo neste exato momento no laboratório.
+  * `concluído`: O horário final terminou e a internet foi liberada automaticamente.
+  * `cancelado`: O agendamento foi interrompido antes da hora.
+* **Como Cancelar:** Se você terminar a atividade mais cedo e quiser devolver a internet aos alunos, vá até a tabela, encontre o agendamento em estado `ativo` ou `pendente` e clique no botão vermelho **"Cancelar"**.
+
 <img width="1600" height="860" alt="prof2" src="https://github.com/user-attachments/assets/ea290066-a4ff-4782-b8b4-b163a83742dd" />
 <img width="1600" height="860" alt="prof3" src="https://github.com/user-attachments/assets/ea9fb8d5-38fe-4ddb-b42a-ba4a8267fdc0" />
+
 ---
 
 ### 3. Painel do Administrador
-Interface avançada de monitoramento global e gerenciamento de infraestrutura/usuários, esse painel só pode ser acessado pela CINF.
 
-#### Portas dos Switches
-Esta tabela realiza o cruzamento de dados entre o pretendido pelo sistema e o estado físico real do equipamento via SNMP.
+**Restrito exclusivamente à equipe da CINF.** Permite auditoria física do hardware, controle total de usuários e ações imediatas de infraestrutura.
+
+#### Portas dos Switches (Ações Imediatas e Auditoria)
+Diferente dos professores, o administrador pode interferir na rede em tempo real sem criar agendamentos temporários. A tabela exibe um cruzamento de dados inteligente:
 
 | Coluna | Descrição |
 | :--- | :--- |
-| **Banco** | O estado que o sistema *pretende* que a porta esteja (Reservada, Liberada ou Bloqueada). |
-| **Switch (ao vivo)** | A leitura real capturada diretamente do hardware por SNMP. |
-| **Confere?** | Exibe `OK` (se os estados forem iguais) ou `Divergente` (caso haja atraso ou falha na aplicação do comando no switch). |
-| **Ação** | Botões rápidos para **Bloquear** ou **Liberar** a porta manualmente sem necessidade de agendamento. |
+| **Banco** | O estado que o sistema *pretende* que a porta esteja (a intenção gravada no software). |
+| **Switch (ao vivo)** | A leitura real capturada diretamente do hardware do switch via SNMP na hora. |
+| **Confere?** | Exibe `OK` se o switch obedeceu ao sistema, ou `Divergente` caso haja falha física, cabo desconectado ou atraso no comando SNMP. |
+| **Ação** | Botões **Bloquear** ou **Liberar** imediatos. Ao clicar, o comando é injetado no switch e **qualquer agendamento de professor ativo para aquela porta é cancelado automaticamente**. |
 
-#### Agendamentos Globais
-Exibe os agendamentos de **todos** os professores cadastrados no sistema. 
-* O administrador possui a permissão de **Cancelar** qualquer agendamento `pendente` ou `ativo` do sistema, independente de quem o criou.
-
-#### Gerenciamento de Professores
-Permite o controle de quem pode acessar a plataforma e o vínculo com os endereços físicos das máquinas.
-* **Remover:** Clique em **"Remover"** ao lado do professor para revogar seus acessos.
-* **Cadastrar Novo:** Preencha os campos `Login`, `Senha` e o endereço `MAC` (Formato: `AA:BB:CC:DD:EE:FF`) no formulário inferior e clique em **"Cadastrar professor"**.
-<img width="1600" height="860" alt="adm3" src="https://github.com/user-attachments/assets/2821979f-070a-40b6-935a-8444ecfc7b8a" />
-<img width="1600" height="860" alt="adm2" src="https://github.com/user-attachments/assets/2b8e2ea9-c981-428f-8746-0a045c71c6a1" />
+#### Agendamentos Globais e Gerenciamento de Professores
+* **Controle de Agendamentos:** O administrador visualiza as reservas de todas as salas e de todos os professores da instituição, possuindo autoridade para **Cancelar** qualquer um deles a qualquer momento.
+* **Cadastro de Professores:** No formulário inferior, insira o `Login`, `Senha` e o endereço `MAC` da máquina de trabalho do docente (Exemplo de formato: `AA:BB:CC:DD:EE:FF`). O campo MAC é obrigatório para que a validação de segurança da sala funcione.
+* **Remoção:** Exclua cadastros instantaneamente clicando no botão cinza **"Remover"**.
 <img width="1600" height="860" alt="adm1" src="https://github.com/user-attachments/assets/b81d97f1-e135-4dd4-adf1-3256fa97bdee" />
+<img width="1600" height="860" alt="adm2" src="https://github.com/user-attachments/assets/2b8e2ea9-c981-428f-8746-0a045c71c6a1" />
+<img width="1600" height="860" alt="adm3" src="https://github.com/user-attachments/assets/2821979f-070a-40b6-935a-8444ecfc7b8a" />
 
 ---
---
+---
 
 ## Arquitetura
 
