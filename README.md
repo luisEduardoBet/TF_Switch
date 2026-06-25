@@ -55,9 +55,9 @@ Na tabela **"Meus agendamentos"** (no rodapé da página), você pode acompanhar
 
 ### 3. Painel do Administrador
 
-**Restrito exclusivamente à equipe da CINF.** Permite auditoria física do hardware, controle total de usuários e ações imediatas de infraestrutura.
+Restrito exclusivamente à equipe da CINF. Permite auditoria física do hardware, controle total de usuários e ações imediatas de infraestrutura.
 
-#### Portas dos Switches (Ações Imediatas e Auditoria)
+#### Portas dos Switches 
 Diferente dos professores, o administrador pode interferir na rede em tempo real sem criar agendamentos temporários. A tabela exibe um cruzamento de dados inteligente:
 
 | Coluna | Descrição |
@@ -65,11 +65,11 @@ Diferente dos professores, o administrador pode interferir na rede em tempo real
 | **Banco** | O estado que o sistema *pretende* que a porta esteja (a intenção gravada no software). |
 | **Switch (ao vivo)** | A leitura real capturada diretamente do hardware do switch via SNMP na hora. |
 | **Confere?** | Exibe `OK` se o switch obedeceu ao sistema, ou `Divergente` caso haja falha física, cabo desconectado ou atraso no comando SNMP. |
-| **Ação** | Botões **Bloquear** ou **Liberar** imediatos. Ao clicar, o comando é injetado no switch e **qualquer agendamento de professor ativo para aquela porta é cancelado automaticamente**. |
+| **Ação** | Botões **Bloquear** ou **Liberar** imediatos. Ao clicar, o comando é injetado no switch e qualquer agendamento de professor ativo para aquela porta é cancelado automaticamente. |
 
 #### Agendamentos Globais e Gerenciamento de Professores
 * **Controle de Agendamentos:** O administrador visualiza as reservas de todas as salas e de todos os professores da instituição, possuindo autoridade para **Cancelar** qualquer um deles a qualquer momento.
-* **Cadastro de Professores:** No formulário inferior, insira o `Login`, `Senha` e o endereço `MAC` da máquina de trabalho do docente (Exemplo de formato: `AA:BB:CC:DD:EE:FF`). O campo MAC é obrigatório para que a validação de segurança da sala funcione.
+* **Cadastro de Professores:** No formulário inferior, insira o `Login`, `Senha` e o endereço `MAC` da máquina de trabalho do docente (Exemplo de formato: `AA:BB:CC:DD:EE:FF`).
 * **Remoção:** Exclua cadastros instantaneamente clicando no botão cinza **"Remover"**.
 <img width="1600" height="860" alt="adm1" src="https://github.com/user-attachments/assets/b81d97f1-e135-4dd4-adf1-3256fa97bdee" />
 <img width="1600" height="860" alt="adm2" src="https://github.com/user-attachments/assets/2b8e2ea9-c981-428f-8746-0a045c71c6a1" />
