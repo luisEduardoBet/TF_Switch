@@ -5,28 +5,88 @@ Plataforma web para controle de acesso à internet em laboratórios de informát
 Desenvolvido como Trabalho Final da disciplina de **Gerência e Mobilidade de Redes** — UDESC.
 
 ---
+## Manual de Utilização da Interface Gráfica (UI)
+---
 
-## Funcionalidades
+### Funcionalidades
 
-### Administrador
+#### Administrador
 - Bloqueia ou libera qualquer porta imediatamente (sem agendamento)
 - Ação manual cancela automaticamente qualquer agendamento ativo naquela porta
 - Visualiza status de cada porta em duas colunas: **Banco** (intenção do sistema) vs **Switch ao vivo** (leitura SNMP real), com indicador de divergência
 - Cancela agendamentos de qualquer professor
 - Cadastra e remove professores
 
-### Professor
+#### Professor
 - Seleciona portas e agenda um período de bloqueio (início + fim)
 - Opção **"Iniciar agora"** (exibe o horário exato que será usado)
 - Vê o status atual de todas as portas em tempo real (sem recarregar a página)
 - Portas reservadas aparecem visualmente, mas não podem ser selecionadas
 - Histórico de agendamentos com status: `pendente → ativo → concluído` (ou `cancelado`)
 
-### Automação
+#### Automação
 - O bloqueio e a liberação das portas acontecem automaticamente nos horários agendados via **APScheduler**
 - Agendamentos pendentes são reagendados automaticamente se o servidor reiniciar
 
 ---
+
+### 1. Tela de Login
+Interface de autenticação simples e direta para acesso aos painéis de controle.
+
+* **Como acessar:** Insira suas credenciais de acesso nos campos **Usuário** e **Senha** e clique em **Entrar**.
+* **Tratamento de Erros:** Caso as credenciais estejam incorretas, um alerta vermelho (`⚠`) será exibido no topo do cartão informando o problema.
+
+---
+
+### 2. Painel do Professor
+Destinado aos docentes para visualização do estado atual das portas e criação de agendamentos temporários de bloqueio.
+
+#### Elementos da Interface
+* Exibe o nome do professor logado e um indicador em tempo real (`conectando...` ou `atualizado HH:MM:SS`) que realiza leituras automáticas na API do switch a cada **5 segundos**.
+* Representação visual de cada porta dividida por switch:
+  * <kbd>liberada</kbd> (Verde): Porta ativa e com tráfego liberado.
+  * <kbd>bloqueada</kbd> (Vermelho): Porta com acesso cortado.
+  * <kbd>reservada</kbd> (Pontilhado/Opaco): Porta protegida pelo sistema (não permite interação).
+
+#### Como Agendar um Bloqueio de Acesso
+1. **Selecione as Portas:** Clique sobre os cards das portas desejadas no Grid. Elas ficarão com uma borda azul destacada indicando a seleção.
+2. **Defina o Início:** * Preencha o campo **Início** com a data e horário desejados, **OU**
+   * Marque a caixa **"Iniciar agora"** para que o bloqueio entre em vigor imediatamente.
+3. **Defina o Fim:** Preencha obrigatoriamente o campo **Fim** (marcado com `*`).
+4. **Confirmar:** Clique no botão **"Agendar bloqueio"**.
+
+#### Meus Agendamentos
+Tabela localizada no rodapé da página que lista o histórico e o status dos pedidos do usuário logado:
+* **Status possíveis:** `pendente`, `ativo`, `concluído` ou `cancelado`.
+* **Cancelamento:** Se um agendamento estiver com o status `pendente` ou `ativo`, um botão **"Cancelar"** estará disponível para interromper a ação imediatamente.
+<img width="1600" height="860" alt="login" src="https://github.com/user-attachments/assets/368c67c6-6b52-409a-b434-3411dc4033b2" />
+
+---
+
+### 3. Painel do Administrador
+Interface avançada de monitoramento global e gerenciamento de infraestrutura/usuários, esse painel só pode ser acessado pela CINF.
+
+#### Portas dos Switches
+Esta tabela realiza o cruzamento de dados entre o pretendido pelo sistema e o estado físico real do equipamento via SNMP.
+
+| Coluna | Descrição |
+| :--- | :--- |
+| **Banco** | O estado que o sistema *pretende* que a porta esteja (Reservada, Liberada ou Bloqueada). |
+| **Switch (ao vivo)** | A leitura real capturada diretamente do hardware por SNMP. |
+| **Confere?** | Exibe `OK` (se os estados forem iguais) ou `Divergente` (caso haja atraso ou falha na aplicação do comando no switch). |
+| **Ação** | Botões rápidos para **Bloquear** ou **Liberar** a porta manualmente sem necessidade de agendamento. |
+
+#### Agendamentos Globais
+Exibe os agendamentos de **todos** os professores cadastrados no sistema. 
+* O administrador possui a permissão de **Cancelar** qualquer agendamento `pendente` ou `ativo` do sistema, independente de quem o criou.
+
+#### Gerenciamento de Professores
+Permite o controle de quem pode acessar a plataforma e o vínculo com os endereços físicos das máquinas.
+* **Remover:** Clique em **"Remover"** ao lado do professor para revogar seus acessos.
+* **Cadastrar Novo:** Preencha os campos `Login`, `Senha` e o endereço `MAC` (Formato: `AA:BB:CC:DD:EE:FF`) no formulário inferior e clique em **"Cadastrar professor"**.
+
+---
+--
 
 ## Arquitetura
 
