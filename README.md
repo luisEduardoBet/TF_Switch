@@ -35,7 +35,7 @@ Interface de autenticação simples e direta para acesso aos painéis de control
 
 * **Como acessar:** Insira suas credenciais de acesso nos campos **Usuário** e **Senha** e clique em **Entrar**.
 * **Tratamento de Erros:** Caso as credenciais estejam incorretas, um alerta vermelho (`⚠`) será exibido no topo do cartão informando o problema.
-
+<img width="1600" height="860" alt="login" src="https://github.com/user-attachments/assets/368c67c6-6b52-409a-b434-3411dc4033b2" />
 ---
 
 ### 2. Painel do Professor
@@ -58,9 +58,10 @@ Destinado aos docentes para visualização do estado atual das portas e criaçã
 #### Meus Agendamentos
 Tabela localizada no rodapé da página que lista o histórico e o status dos pedidos do usuário logado:
 * **Status possíveis:** `pendente`, `ativo`, `concluído` ou `cancelado`.
-* **Cancelamento:** Se um agendamento estiver com o status `pendente` ou `ativo`, um botão **"Cancelar"** estará disponível para interromper a ação imediatamente.
-<img width="1600" height="860" alt="login" src="https://github.com/user-attachments/assets/368c67c6-6b52-409a-b434-3411dc4033b2" />
-
+* **Cancelamento:** Se um agendamento estiver com o status `pendente` ou `ativo`, um botão **"Cancelar"** estará disponível para interromper a ação imediatamente. 
+<img width="1600" height="860" alt="prof1" src="https://github.com/user-attachments/assets/b4579704-a695-471e-b130-f74e81f532e0" />
+<img width="1600" height="860" alt="prof2" src="https://github.com/user-attachments/assets/ea290066-a4ff-4782-b8b4-b163a83742dd" />
+<img width="1600" height="860" alt="prof3" src="https://github.com/user-attachments/assets/ea9fb8d5-38fe-4ddb-b42a-ba4a8267fdc0" />
 ---
 
 ### 3. Painel do Administrador
@@ -84,6 +85,9 @@ Exibe os agendamentos de **todos** os professores cadastrados no sistema.
 Permite o controle de quem pode acessar a plataforma e o vínculo com os endereços físicos das máquinas.
 * **Remover:** Clique em **"Remover"** ao lado do professor para revogar seus acessos.
 * **Cadastrar Novo:** Preencha os campos `Login`, `Senha` e o endereço `MAC` (Formato: `AA:BB:CC:DD:EE:FF`) no formulário inferior e clique em **"Cadastrar professor"**.
+<img width="1600" height="860" alt="adm3" src="https://github.com/user-attachments/assets/2821979f-070a-40b6-935a-8444ecfc7b8a" />
+<img width="1600" height="860" alt="adm2" src="https://github.com/user-attachments/assets/2b8e2ea9-c981-428f-8746-0a045c71c6a1" />
+<img width="1600" height="860" alt="adm1" src="https://github.com/user-attachments/assets/b81d97f1-e135-4dd4-adf1-3256fa97bdee" />
 
 ---
 --
