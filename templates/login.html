@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Controle de Acesso</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background:#0f172a; color:#e2e8f0;
+               display:flex; min-height:100vh; align-items:center; justify-content:center; margin:0;}
+        .card { background:#1e293b; padding:2rem; border-radius:12px; width:320px;
+                box-shadow:0 10px 30px rgba(0,0,0,.4);}
+        h1 { font-size:1.25rem; margin:0 0 1.25rem;}
+        label { display:block; font-size:.8rem; margin:.75rem 0 .25rem; color:#94a3b8;}
+        input { width:100%; padding:.6rem; border-radius:8px; border:1px solid #334155;
+                background:#0f172a; color:#e2e8f0; box-sizing:border-box;}
+        button { width:100%; margin-top:1.25rem; padding:.7rem; border:0; border-radius:8px;
+                 background:#3b82f6; color:white; font-weight:600; cursor:pointer;}
+        button:hover { background:#2563eb;}
+        .erro { background:#7f1d1d; color:#fecaca; padding:.6rem; border-radius:8px;
+                font-size:.85rem; margin-bottom:1rem;}
+    </style>
+</head>
+<body>
+    <form class="card" method="post" action="/login">
+        <h1>🔒 Controle de Acesso</h1>
+        {% if erro %}<div class="erro">{{ erro }}</div>{% endif %}
+        <label for="login">Usuário</label>
+        <input id="login" name="login" autocomplete="username" required>
+        <label for="senha">Senha</label>
+        <input id="senha" name="senha" type="password" autocomplete="current-password" required>
+        <button type="submit">Entrar</button>
+    </form>
+</body>
+</html>
